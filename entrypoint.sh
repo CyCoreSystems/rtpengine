@@ -33,6 +33,20 @@ function remove_old_table() {
 
 install_module
 
+# Calculate interfaces
+
+INTERFACES=""
+
+EXTIPV4=$(netdiscover -field publicv4)
+if [ ! -z "$EXTIPV4" ]; then
+   INTERFACES="$INTERFACES --interface=$EXTIPV4"
+fi
+
+EXTIPV6=$(netdiscover -field publicv6)
+if [ ! -z "$EXTIPV6" ]; then
+   INTERFACES="$INTERFACES --interface=$EXTIPV6"
+fi
+
 # first arg is `-f` or `--some-option`
 # or first arg is `something.conf`
 if [ "${1#-}" != "$1" ] ; then
@@ -46,7 +60,7 @@ if [ "$1" == "rtpengine" ]; then
    shift
 
    echo "Starting RTPEngine..."
-   exec rtpengine --table=$RTE_TABLE $@
+   exec rtpengine --table=$RTE_TABLE $INTERFACES $@
 else
    echo "Starting provided command..."
    exec $@
