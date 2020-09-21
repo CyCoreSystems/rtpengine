@@ -4,7 +4,7 @@ ENV RTPENGINE_VER=mr7.4.1.5
 ENV BCG729_VER=1.0.4
 
 RUN apt-get update
-RUN apt-get install -y build-essential curl dpkg-dev devscripts equivs git pkg-config wget
+RUN apt-get install -y build-essential curl dpkg-dev devscripts equivs git pkg-config wget iptables
 
 # Install bcg729 library for building rtpengine with G.729 transcoding support
 RUN curl -L -o /tmp/bcg729_${BCG729_VER}.orig.tar.gz https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/${BCG729_VER}
@@ -34,7 +34,11 @@ FROM debian:stretch
 COPY --from=builder /tmp/*.deb /tmp/
 
 RUN apt-get update
-RUN apt-get install -y libavcodec-extra
+RUN apt-get install -y libavcodec-extra iptables curl
+
+# Download netdiscover
+RUN curl -qL -o /usr/bin/netdiscover https://github.com/CyCoreSystems/netdiscover/releases/download/v1.2.5/netdiscover.linux.amd64
+RUN chmod +x /usr/bin/netdiscover
 
 WORKDIR /tmp
 RUN apt install -y $(ls /tmp/libbcg729-0_*.deb)
@@ -45,3 +49,6 @@ RUN apt install -y $(ls /tmp/ngcp-rtpengine-iptables_*.deb)
 RUN apt install -y $(ls /tmp/ngcp-rtpengine-kernel-dkms_*.deb)
 
 ADD entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["rtpengine"]
